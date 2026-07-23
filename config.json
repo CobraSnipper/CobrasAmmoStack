@@ -1,0 +1,56 @@
+{
+  "Enabled": true,
+
+  "DefaultAmmoStackSize": 500,
+
+  "Calibers": {
+    "Caliber9x18PM": 500,
+    "Caliber9x19PARA": 500,
+    "Caliber9x21": 500,
+    "Caliber9x33R": 500,
+    "Caliber57x28": 500,
+    "Caliber46x30": 500,
+
+    "Caliber1143x23ACP": 500,
+    "Caliber762x25TT": 500,
+
+    "Caliber545x39": 500,
+    "Caliber556x45NATO": 500,
+    "Caliber762x35": 500,
+    "Caliber762x39": 500,
+    "Caliber762x51": 500,
+    "Caliber762x54R": 500,
+    "Caliber68x51": 500,
+
+    "Caliber127x55": 250,
+    "Caliber127x108": 100,
+    "Caliber86x70": 250,
+
+    "Caliber366TKM": 250,
+
+    "Caliber12g": 100,
+    "Caliber20g": 100,
+    "Caliber23x75": 100,
+
+    "Caliber26x75": 25,
+
+    "Caliber30x29": 50,
+    "Caliber40x46": 50,
+    "Caliber40mmRU": 50
+  },
+
+  "CustomCalibers": {
+    "Caliber127x33": 250,
+    "Caliber127x99": 100,
+    "Caliber20x1mm": 50,
+    "Caliber725": 500,
+    "Caliber784x49": 250,
+    "Caliber93x64": 250,
+    "Caliber9x39": 500
+  },
+
+  "ItemOverrides": {},
+
+  "ShowChangedAmmoInServerLog": false,
+  "ShowUnknownCalibersInServerLog": true
+}

@@ -1,7 +1,7 @@
 # Cobra's Ammo Stack
 
 ![SPT](https://img.shields.io/badge/SPT-4.0.13-blue)
-![Version](https://img.shields.io/badge/Version-1.0.0-green)
+![Version](https://img.shields.io/badge/Version-1.0.1-green)
 ![License](https://img.shields.io/badge/License-MIT-yellow)
 
 A lightweight server-side mod for **SPT 4.0.13** that gives you complete control over ammunition stack sizes.

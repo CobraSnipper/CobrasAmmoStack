@@ -52,5 +52,5 @@
   "ItemOverrides": {},
 
   "ShowChangedAmmoInServerLog": false,
-  "ShowUnknownCalibersInServerLog": true
+  "ShowUnknownCalibersInServerLog": false
 }

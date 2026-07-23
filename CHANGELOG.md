@@ -6,7 +6,7 @@ This project follows Semantic Versioning (SemVer).
 
 ---
 
-## [1.0.0] - 2026-07-23
+## [1.0.1] - 2026-07-23
 
 ### 🎉 Initial Release
 

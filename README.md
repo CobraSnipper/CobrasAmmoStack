@@ -42,21 +42,7 @@ Configure stack sizes by caliber, support ammunition from other mods, and overri
 If installed correctly you should see something similar to:
 
 ```text
-============================================================
-                    Cobra's Ammo Stack
-                         Version 1.0.0
-                     Built for SPT 4.0.13
-============================================================
-
-[OK] Loaded Successfully
-
-[OK] Ammo Modified      : 218
-[OK] Default Stack Size : 500
-[OK] Known Calibers     : 26
-[OK] Custom Calibers    : 7
-[OK] Item Overrides     : 0
-
-============================================================
+[Cobra's Ammo Stack] v1.0.1 loaded. Modified XXX ammunition items.
 ```
 
 ---

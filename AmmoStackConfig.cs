@@ -1,4 +1,4 @@
-namespace CobrasAmmoStack;
+﻿namespace CobrasAmmoStack;
 
 public sealed record AmmoStackConfig
 {
@@ -18,4 +18,6 @@ public sealed record AmmoStackConfig
     public bool ShowChangedAmmoInServerLog { get; init; } = false;
 
     public bool ShowUnknownCalibersInServerLog { get; init; } = true;
+
+    public bool DebugMode { get; init; } = false;
 }

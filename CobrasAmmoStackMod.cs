@@ -1,131 +1,109 @@
-using System.Reflection;
+﻿using System.Reflection;
+using System.Text.Json;
+using SPTarkov.Common.Models.Logging;
 using SPTarkov.DI.Annotations;
 using SPTarkov.Server.Core.DI;
-using SPTarkov.Server.Core.Helpers;
+using SPTarkov.Server.Core.Models.Spt.Tables;
 using SPTarkov.Server.Core.Models.Utils;
-using SPTarkov.Server.Core.Services;
 
 namespace CobrasAmmoStack;
 
-[Injectable(TypePriority = OnLoadOrder.PostDBModLoader + 100)]
+
+[Injectable]
 public sealed class CobrasAmmoStackMod(
     ISptLogger<CobrasAmmoStackMod> logger,
-    DatabaseService databaseService,
-    ModHelper modHelper) : IOnLoad
+    TemplateTable templateTable) : IOnLoad
 {
     private const string ModName = "Cobra's Ammo Stack";
-    private const string ModVersion = "1.0.1";
+    private const string ModVersion = "1.1.0";
 
-    public Task OnLoad()
+    public Task OnLoadAsync(CancellationToken cancellationToken)
     {
-        var modFolder = modHelper.GetAbsolutePathToModFolder(
-            Assembly.GetExecutingAssembly());
-
-        var config = modHelper.GetJsonDataFromFile<AmmoStackConfig>(
-            modFolder,
-            "config.json");
-
-        if (!config.Enabled)
+        try
         {
-            logger.Warning($"[{ModName}] Disabled in config.json.");
-            return Task.CompletedTask;
+            var modFolder = Path.GetDirectoryName(
+                Assembly.GetExecutingAssembly().Location);
+
+            if (string.IsNullOrWhiteSpace(modFolder))
+            {
+                logger.Error($"[{ModName}] Could not locate the mod folder.");
+                return Task.CompletedTask;
+            }
+
+            var configPath = Path.Combine(modFolder, "config.json");
+
+            if (!File.Exists(configPath))
+            {
+                logger.Error($"[{ModName}] config.json was not found.");
+                return Task.CompletedTask;
+            }
+
+            var config = JsonSerializer.Deserialize<AmmoStackConfig>(
+                File.ReadAllText(configPath),
+                new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                });
+
+            if (config is null)
+            {
+                logger.Error($"[{ModName}] Could not read config.json.");
+                return Task.CompletedTask;
+            }
+
+            if (!config.Enabled)
+            {
+                logger.Warning($"[{ModName}] Disabled in config.json.");
+                return Task.CompletedTask;
+            }
+
+            
+            var changedCount = 0;
+
+            foreach (var itemEntry in templateTable.Items)
+            {
+                var itemId = itemEntry.Key;
+                var item = itemEntry.Value;
+
+                var caliber = item.Properties?.Caliber;
+
+                if (string.IsNullOrWhiteSpace(caliber))
+                {
+                    continue;
+                }
+
+                var stackSize = config.DefaultAmmoStackSize;
+
+                if (config.Calibers.TryGetValue(caliber, out var configuredSize))
+                {
+                    stackSize = configuredSize;
+                }
+                else if (config.CustomCalibers.TryGetValue(caliber, out var customSize))
+                {
+                    stackSize = customSize;
+                }
+
+                if (config.ItemOverrides.TryGetValue(itemId, out var overrideSize))
+                {
+                    stackSize = overrideSize;
+                }
+
+                item.Properties.StackMaxSize = stackSize;
+                changedCount++;
+            }
+
+            logger.Success(
+                $"[{ModName}] v{ModVersion} loaded. Modified {changedCount} ammunition items.");
         }
-
-        var tables = databaseService.GetTables();
-        var items = tables.Templates.Items;
-
-        var changedItems = 0;
-
-        var unknownCalibers = new HashSet<string>(
-            StringComparer.OrdinalIgnoreCase);
-
-        foreach (var item in items.Values)
+        catch (JsonException)
         {
-            var properties = item.Properties;
-
-            if (properties?.Caliber is null)
-            {
-                continue;
-            }
-
-            var caliber = properties.Caliber;
-
-            var stackSize = ResolveStackSize(
-                item.Id,
-                caliber,
-                config,
-                unknownCalibers);
-
-            if (stackSize < 1)
-            {
-                logger.Warning(
-                    $"[{ModName}] Invalid stack size {stackSize} " +
-                    $"for item {item.Id}. Using 1 instead.");
-
-                stackSize = 1;
-            }
-
-            properties.StackMaxSize = stackSize;
-            changedItems++;
-
-            if (config.ShowChangedAmmoInServerLog)
-            {
-                logger.Info(
-                    $"[{ModName}] Item={item.Id}, " +
-                    $"Caliber={caliber}, Stack={stackSize}");
-            }
+            logger.Error($"[{ModName}] config.json contains invalid JSON.");
         }
-
-        logger.Success(
-            $"[{ModName}] v{ModVersion} loaded. " +
-            $"Modified {changedItems} ammunition items.");
-
-        if (config.ShowUnknownCalibersInServerLog
-            && unknownCalibers.Count > 0)
+        catch (Exception exception)
         {
-            logger.Warning(
-                $"[{ModName}] {unknownCalibers.Count} unknown caliber(s) " +
-                $"used DefaultAmmoStackSize ({config.DefaultAmmoStackSize}).");
-
-            foreach (var caliber in unknownCalibers.OrderBy(x => x))
-            {
-                logger.Warning(
-                    $"[{ModName}] Unknown caliber: {caliber}");
-            }
+            logger.Error($"[{ModName}] Failed to load: {exception.Message}");
         }
 
         return Task.CompletedTask;
-    }
-
-    private static int ResolveStackSize(
-        string itemId,
-        string caliber,
-        AmmoStackConfig config,
-        HashSet<string> unknownCalibers)
-    {
-        if (config.ItemOverrides.TryGetValue(
-                itemId,
-                out var itemStackSize))
-        {
-            return itemStackSize;
-        }
-
-        if (config.Calibers.TryGetValue(
-                caliber,
-                out var caliberStackSize))
-        {
-            return caliberStackSize;
-        }
-
-        if (config.CustomCalibers.TryGetValue(
-                caliber,
-                out var customStackSize))
-        {
-            return customStackSize;
-        }
-
-        unknownCalibers.Add(caliber);
-
-        return config.DefaultAmmoStackSize;
     }
 }
